@@ -1,0 +1,36 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+#sidebar {
+    height: calc(100vh - 136px); /* Altura total menos la cabecera y el pie de página */
+    overflow-y: auto;
+}
+
+#map-container {
+    height: calc(100vh - 136px); /* Altura total menos la cabecera y el pie de página */
+    padding: 0;
+}
+
+#map {
+    height: 100%;
+    width: 100%;
+}
+
+#infMap {
+    height: calc(100vh - 136px); /* Altura total menos la cabecera y el pie de página */
+    overflow-y: auto;
+}
+
+/* Estilos personalizados para el control de capas */
+.layers-control {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 1000;
+    background: white;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
