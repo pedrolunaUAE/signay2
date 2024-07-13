@@ -1,16 +1,12 @@
-/**
- * Definiciones y Configuraciones Iniciales
- */
-
 let legendControl; // Variable global para almacenar la instancia de la leyenda
 let municipioLayer; // Variable global para almacenar la capa de Municipios
 
-// Inicializa el mapa centrado en Nayarit con control de zoom desactivado y con límites de zoom
+
+
+// Inicializa el mapa centrado en Nayarit con control de zoom desactivado
 const map = L.map('map', {
-    zoomControl: false, // Desactiva el control de zoom por defecto
-    minZoom: 8,         // Nivel mínimo de zoom - permitido
-    maxZoom: 16         // Nivel máximo de zoom +  permitido
-}).setView([21.87, -104.85], 8); // Coordenadas centrale del estado de Nayarit, Mexico
+    zoomControl: false // Desactiva el control de zoom por defecto
+}).setView([21.87, -104.85], 8); // Coordenadas de Nayarit
 
 // Añade una capa de mapa base de OpenStreetMap
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -22,9 +18,6 @@ L.control.zoom({
     position: 'topright'
 }).addTo(map);
 
-/**
- * Funciones para Cargar y Manejar Capas
- */
 
 /**
  * Carga una capa desde una URL y la añade al mapa.
@@ -32,27 +25,46 @@ L.control.zoom({
  * @param {string} url - La URL desde donde cargar los datos de la capa.
  * @param {boolean} addToMap - Si se debe añadir la capa al mapa.
  * @param {boolean} alFrente - Si se debe traer la capa al frente del mapa.
+ * @param {string} label - Etiqueta de la capa.
  */
-function loadLayer(layer, url, addToMap, alFrente) {
+function loadLayer(layer, url, addToMap, alFrente, label) {
+    // Mostrar indicador de carga
     document.getElementById('loadingIndicator').style.display = 'inline';
 
     fetch(url)
         .then(response => {
-            if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
             return response.json();
         })
         .then(data => {
             layer.addData(data);
+
             layer.eachLayer(function(featureLayer) {
                 const properties = featureLayer.feature.properties;
-                if (properties.tipo === 'Entidad') updateInfMap(properties);
-                if (properties.tipo === 'Municipio') municipioLayer = layer;
-                featureLayer.on('click', () => updateInfMap(properties));
+                
+                if (properties.tipo === 'Entidad') {
+                    updateInfMap(properties);
+                }
+
+                if (properties.tipo === 'Municipio') {
+                    municipioLayer = layer; // Almacenar la capa de Municipios
+                }
+
+                featureLayer.on('click', function(e) {
+                    updateInfMap(properties);
+                });
             });
+
             if (addToMap) {
-                map.addLayer(layer);
-                if (alFrente) layer.bringToFront();
+                map.addLayer(layer); // Agregar la capa al mapa
+                if (alFrente) {
+                    layer.bringToFront(); // Traer la capa al frente
+                }
             }
+
+            // Ocultar indicador de carga después de cargar la capa
             document.getElementById('loadingIndicator').style.display = 'none';
         })
         .catch(error => {
@@ -79,23 +91,29 @@ function traverseTree(node, callback) {
  * Carga las capas en el orden definido por su prioridad.
  * @param {object} layersTree - Árbol de capas.
  */
-
 function cargarCapasEnOrden(layersTree) {
     const layers = [];
+
     traverseTree(layersTree, node => {
-        if (node.layer && node.url) layers.push(node);
+        if (node.layer && node.url) {
+            layers.push(node);
+        }
     });
+
     layers.sort((a, b) => a.priority - b.priority);
 
+    // Implementar carga diferida
     let index = 0;
     function loadNextLayer() {
         if (index < layers.length) {
             const layerConfig = layers[index];
             loadLayer(layerConfig.layer, layerConfig.url, layerConfig.addToMap, layerConfig.alFrente);
             index++;
-            setTimeout(loadNextLayer, 50); // Cargar la siguiente capa después de un pequeño retraso
+            // Cargar la siguiente capa después de un pequeño retraso para no bloquear la interfaz
+            setTimeout(loadNextLayer, 50);
         }
     }
+
     loadNextLayer();
 }
 
@@ -108,31 +126,38 @@ cargarCapasEnOrden(layersTree);
  */
 function manageLayerPriority(layers) {
     const sortedLayers = layers.sort((a, b) => a.priority - b.priority);
+
     sortedLayers.forEach(layerConfig => {
-        if (map.hasLayer(layerConfig.layer)) layerConfig.layer.bringToFront();
+        if (map.hasLayer(layerConfig.layer)) {
+            layerConfig.layer.bringToFront();
+        }
     });
 }
 
-/**
- * Eventos de Mapa y Control de Capas
- */
-
 // Evento que se dispara cuando se agrega una capa al mapa
-map.on('layeradd', function() {
+map.on('layeradd', function(e) {
     const activeLayers = [];
+
     traverseTree(layersTree, node => {
-        if (map.hasLayer(node.layer)) activeLayers.push(node);
+        if (map.hasLayer(node.layer)) {
+            activeLayers.push(node);
+        }
     });
+
     manageLayerPriority(activeLayers);
     updateLegend(activeLayers); // Actualiza la leyenda con las capas activas
 });
 
 // Evento que se dispara cuando se elimina una capa del mapa
-map.on('layerremove', function() {
+map.on('layerremove', function(e) {
     const activeLayers = [];
+
     traverseTree(layersTree, node => {
-        if (map.hasLayer(node.layer)) activeLayers.push(node);
+        if (map.hasLayer(node.layer)) {
+            activeLayers.push(node);
+        }
     });
+
     manageLayerPriority(activeLayers);
     updateLegend(activeLayers); // Actualiza la leyenda con las capas activas
 });
@@ -150,74 +175,66 @@ const layersControl = L.control.layers.tree(null, layersTree, {
 }).addTo(map);
 
 // Expandir solo la primera rama al cargar la página
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const firstBranch = document.querySelector('.leaflet-control-layers-list > li:first-child .leaflet-control-layers-toggle');
     if (firstBranch && !firstBranch.classList.contains('leaflet-control-layers-expanded')) {
         firstBranch.click(); // Expande la primera rama
     }
 });
 
-/**
- * Funciones de Leyenda y Actualización de Estilos
- */
 
-/**
- * Crear las leyendas del mapa
- */
+// Crear una nueva instancia del control de leyenda
 legendControl = L.control({ position: 'bottomright' });
-
-legendControl.onAdd = function() {
-    var div = L.DomUtil.create('div', 'info legend');
-    div.innerHTML = `
-        <div class="legend-item" style="margin-bottom: 5px;">
-            <button class="collapse-button" onclick="toggleLegendSection('pobMunLegend')">
-                <h6><b>Simbología</b></h6>
-            </button>
-        </div>
-        <div id="pobMunLegend" class="legend-section" style="display: none;"></div>
-    `;
-    return div;
-};
-legendControl.addTo(map); // Añade el nuevo control de leyenda al mapa
 
 /**
  * Actualiza la leyenda del mapa en función de las capas activas y los estilos dinámicos.
  * @param {array} activeLayers - Capas activas en el mapa.
- * @param {boolean} addLeyenda - Indica si se debe incluir la configuración de la leyenda de población.
+ * @param {boolean} includePobMunLegend - Indica si se debe incluir la configuración de la leyenda de población.
  */
-function updateLegend(activeLayers, addLeyenda = false,tipodato) {
-    let legendHTML = '';
+function updateLegend(activeLayers, includePobMunLegend = false) {
+ 
+    legendControl.onAdd = function(map) {
+        var div = L.DomUtil.create('div', 'info legend');
+        div.innerHTML = `
+            <h6><b>Simbología</b></h6>
+            <div class="legend-item" style="margin-bottom: 5px;">
+                <button class="collapse-button" onclick="toggleLegendSection('pobMunLegend')">Estratos de Población total</button>
+            </div>
+        `;
 
-    if (addLeyenda) {
-        const LegendArray = getLegendConfig(tipodato); // Cargamos el arreglo retonado
-        legendHTML += `<h6>${LegendArray.title}</h6>`; // Agregar el título de la leyenda
+         div.innerHTML += `<div id="pobMunLegend" class="legend-section" style="display: none;"> `;
+    
+            // Agregar la configuración de la leyenda basada en los estratos de población si se requiere
+            if (includePobMunLegend) {
+                const pobMunLegendConfig = getPobMunLegendConfig();
+                pobMunLegendConfig.forEach(item => {
+                    div.innerHTML += `
+                    <div class="legend-item" style="margin-bottom: 5px;">
+                        <i style="background: ${item.color}; opacity: 0.6; border: 1px solid black;"></i> ${item.label}
+                    </div>`;
+                });
+            }
+    
+            div.innerHTML += `</div>`; // Cerrar el div pobMunLegend aquí, después de agregar todos los items
+    
+        // Agregar las capas activas a la leyenda
+        activeLayers.forEach(layer => {
+            const style = getLayerStyles(layer.layer);
 
-        LegendArray.style.forEach(item => {
-            if (item.label) { // Saltar el primer objeto si es sólo el título
-                legendHTML += `
+            if (style) {
+                div.innerHTML += `
                 <div class="legend-item" style="margin-bottom: 5px;">
-                    <i style="background: ${item.color}; opacity: 0.6; border: 1px solid black;"></i> ${item.label}
+                    <i style="border: 1px solid ${style.color};"></i> 
+                    ${layer.label || 'Categoría'}
                 </div>`;
             }
         });
-    }
-    
-    // Definicion de capas activas en el mapa 
-    legendHTML += `
-        <h6>Límites Geoestadísticos</h6>
-    `;
-    activeLayers.forEach(layer => {
-        const style = getLayerStyles(layer.layer);
-        if (style) {
-            legendHTML += `
-            <div class="legend-item" style="margin-bottom: 5px;">
-                <i style="border: 1px solid ${style.color};"></i> 
-                ${layer.label || 'Categoría'}
-            </div>`;
-        }
-    });
 
-    document.getElementById('pobMunLegend').innerHTML = legendHTML;
+        div.innerHTML += `</div>`;
+        return div;
+    };
+
+    legendControl.addTo(map); // Añade el nuevo control de leyenda al mapa
 }
 
 /**
@@ -238,25 +255,19 @@ function getLayerStyles(layer) {
  */
 function toggleLegendSection(sectionId) {
     var section = document.getElementById(sectionId);
-    section.style.display = section.style.display === "none" ? "block" : "none";
+    if (section.style.display === "none") {
+        section.style.display = "block";
+    } else {
+        section.style.display = "none";
+    }
 }
 
 /**
  * Actualiza el estilo de la capa de municipios y actualiza la leyenda del mapa.
  */
-let agregaLeyenda=false;
-
-function updateLayerStyle(tipoDato) {
-    
+function updateLayerStyle() {
     if (municipioLayer) {
-        if (agregaLeyenda){
-            addLeyenda = false;
-            municipioLayer.setStyle(getStyleDato()); 
-        }else {
-            addLeyenda = true;
-            tipodato=tipoDato;
-            municipioLayer.setStyle(getStyleDato(tipodato)); 
-        }    
+        municipioLayer.setStyle(getStylePobMun); // Aplicar nuevo estilo a la capa de municipios
 
         const activeLayers = [];
         traverseTree(layersTree, node => {
@@ -265,7 +276,6 @@ function updateLayerStyle(tipoDato) {
             }
         });
 
-        updateLegend(activeLayers, addLeyenda,tipodato); // Actualizar la leyenda con los estilos actualizados y añadir la configuración de población
+        updateLegend(activeLayers, true); // Actualizar la leyenda con los estilos actualizados y añadir la configuración de población
     }
 }
-

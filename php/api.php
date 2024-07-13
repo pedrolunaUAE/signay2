@@ -2,43 +2,22 @@
 
 header('Content-Type: application/json');
 
-// Habilitar el registro de errores en PHP
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
-// Configuración de la base de datos
-$host = 'mxsig-db';  // Usar el nombre del servicio Docker
-$port = '5432';
-$dbname = 'mdm6data';
-$user = 'postgres';
-$password = 'postgres';
+require_once './dataconect.php';
 
 // Conectar a la base de datos
-$conn = pg_connect("host=$host port=$port dbname=$dbname user=$user password=$password");
-
-// Verificar la conexión
-if (!$conn) {
-    echo json_encode(['error' => 'Unable to connect to the database']);
-    exit;
-}
+$conn = getDbConnection();
 
 // Obtener el nombre de la capa desde la URL
 $layer = isset($_GET['layer']) ? $_GET['layer'] : '';
+$tipo  = isset($_GET['tipo'])  ? $_GET['tipo'] : '';
 
-// Validar el nombre de la capa para evitar inyección SQL
-$allowed_layers = ['entidad', 'municipios', 'localidades']; // Añade los nombres de capas permitidos
-if (!in_array($layer, $allowed_layers)) {
-    echo json_encode(['error' => 'Invalid layer specified']);
-    pg_close($conn);
-    exit;
+// Definir la consulta basada en el valor de $tipoConsulta
+if ($tipo === 'map') {
+    $query = "SELECT *, ST_AsGeoJSON(ST_Transform(geom, 4326)) AS geojson FROM $layer";
+} else {
+    $query = "SELECT * FROM $layer";
 }
-// Aqui se realiza la consulta
-// Construir la consulta SQL
-$query = "SELECT ST_AsGeoJSON(ST_Transform(the_geom, 4326)) AS geojson FROM mg.$layer";
 
-// Imprimir la consulta para depuración
-error_log("Query: $query");
 
 // Ejecutar la consulta
 $result = pg_query($conn, $query);
@@ -54,10 +33,19 @@ if (!$result) {
 $features = [];
 while ($row = pg_fetch_assoc($result)) {
     $feature = json_decode($row['geojson'], true);
+
+    // Crear un array properties excluyendo 'gid' y 'geojson'
+    $properties = [];
+    foreach ($row as $key => $value) {
+        if ($key !== 'gid' && $key !== 'geojson' && $key !== 'geom') {
+            $properties[$key] = $value;
+        }
+    }
+
     $features[] = [
         'type' => 'Feature',
         'geometry' => $feature,
-        'properties' => [] // Puedes agregar propiedades adicionales aquí si es necesario
+        'properties' => $properties
     ];
 }
 

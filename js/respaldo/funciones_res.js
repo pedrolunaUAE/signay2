@@ -29,14 +29,6 @@ function mostrarPanelInfo(properties) {
     map.invalidateSize();
 }
 
-// Event listener para manejar el clic en el botón en el popup
-document.addEventListener('click', function(event) {
-    if (event.target && event.target.id === 'btnInfMap' || event.target.closest('#btnInfMap')) {
-        event.preventDefault();
-        mostrarPanelInfo();
-    }
-});
-
 $(document).ready(function () {
     $('#myTab a').on('click', function (e) {
         e.preventDefault();

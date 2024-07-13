@@ -23,14 +23,406 @@ body {
     overflow-y: auto;
 }
 
-/* Estilos personalizados para el control de capas */
-.layers-control {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    z-index: 1000;
-    background: white;
-    padding: 10px;
-    border-radius: 5px;
+#infMap {
+    border: 1px solid #ddd;
+    background-color: #f9f9f9;
+    overflow-y: auto;
+    max-height: 90vh; /* Limita la altura y permite desplazamiento */
+}
+.p-3 {
+    padding: .5rem !important;
+}
+
+
+/*****************************************************/
+/*  Estilos personalizados para el control de capas  */
+/*****************************************************/
+
+.leaflet-control-layers {
+    background-color: #343a40 !important; /* Fondo oscuro */
+    color: white !important; /* Color del texto */
+    border: 1px solid #495057; /* Borde */
+    border-radius: 8px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    width: 200px; /* Ancho del control de capas */
+    height: auto; /* Altura automática para el control de capas */
+    overflow: hidden; /* Para evitar que el contenido se desborde */
+    transition: all 0.3s ease; /* Animación suave para la expansión y colapso */
+}
+
+.leaflet-control-layers-expanded {
+    background-color: #343a40 !important; /* Fondo oscuro expandido */
+    color: white !important; /* Color del texto expandido */
+    border: 1px solid #495057; /* Borde */
+    width: 200px !important; /* Ancho del control de capas expandido */
+    height: auto !important; /* Altura automática para el control de capas expandido */
+    max-height: 80vh; /* Limitar la altura máxima para evitar que ocupe toda la pantalla */
+    overflow-y: auto; /* Agregar scroll si el contenido es muy alto */
+}
+
+.leaflet-control-layers-toggle {
+    width: auto; /* Ajustar el tamaño según el contenido */
+    height: 40px; /* Altura del botón */
+    background-color: #343a40 !important; /* Fondo oscuro del toggle */
+    border: 1px solid #495057 !important; /* Borde del toggle */
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease; /* Animación suave para el fondo */
+}
+
+.leaflet-control-layers-toggle:hover {
+    background-color: #495057 !important; /* Fondo más claro al pasar el mouse */
+}
+
+.leaflet-control-layers-toggle:before {
+    content: 'Capas'; /* Mostrar el texto "Capas" */
+    color: white; /* Color del texto */
+    font-size: 16px; /* Tamaño del texto */
+    font-weight: bold; /* Peso del texto */
+    padding: 0 10px; /* Espacio alrededor del texto */
+    transition: transform 0.3s ease; /* Animación suave para la rotación */
+}
+
+.leaflet-control-layers-expanded .leaflet-control-layers-toggle:before {
+    content: 'Capas'; /* Mantener el texto "Capas" cuando está expandido */
+    transform: rotate(0deg); /* No rotar el texto */
+}
+
+
+/*****************************************************/
+/*          Personaliza el control de zoom           */
+/*****************************************************/
+
+
+.leaflet-control-zoom {
+    background-color: #343a40 !important; /* Fondo oscuro */
+    border: none !important;
+    border-radius: 4px !important;
+    box-shadow: none !important;
+}
+
+.leaflet-control-zoom a {
+    color: white !important; /* Color de los iconos */
+    text-decoration: none !important;
+    font-size: 18px !important; /* Ajusta el tamaño de los iconos */
+    line-height: 1.5em !important; /* Ajusta el espaciado */
+    background-color: #343a40 !important; /* Fondo oscuro */
+}
+
+.leaflet-control-zoom a:hover {
+    background-color: #495057 !important; /* Fondo más claro al pasar el mouse */
+    color: white !important;
+}
+
+.leaflet-control-zoom a:active {
+    background-color: #6c757d !important; /* Fondo aún más claro cuando se hace clic */
+    color: white !important;
+}
+
+
+
+/*****************************************************/
+/*                Estilo para el popup               */
+/*****************************************************/
+
+/* Estilo para el popup de Leaflet */
+.leaflet-popup-content-wrapper, .leaflet-popup-tip {
+    background: #212529; /* Fondo oscuro para el popup */
+    color: #0d0d0e; /* Texto */
+    padding: 5px;
+    border-radius: 5px;
+}
+
+/* Ajustar el padding del contenido del Popup */
+.leaflet-popup-content {
+    margin: 2px; /* Reducir el margen interno */
+}
+
+/* Estilo para la tarjeta dentro del Popup */
+.custom-popup .card {
+    width: 14rem; /* Reducir el ancho de la tarjeta */
+    font-size: 0.8rem; /* Reducir el tamaño de la fuente */
+    background-color: #ffffff; /* Fondo blanco para la tarjeta */
+    border: 1px solid #dee2e6; /* Borde para la tarjeta */
+    border-radius: 5px; /* Bordes redondeados para la tarjeta */
+}
+
+/* Ajustar el estilo del cuerpo de la tarjeta */
+.custom-popup .card-body {
+    padding: 0.5rem; /* Reducir el relleno de la tarjeta */
+}
+
+/* Ajustar el estilo de la tabla */
+.custom-popup .table {
+    margin-bottom: 0; /* Eliminar el margen inferior de la tabla */
+}
+
+/* Estilo para el botón */
+.custom-popup .btn {
+    padding: 0.2rem 0.25rem; /* Reducir el tamaño del botón */
+    font-size: 0.9rem; /* Reducir el tamaño de la fuente del botón */
+    background-color: #0c0c0c; /* Color de fondo del botón */
+    color: #ffffff; /* Color del texto del botón */
+    border: none; /* Sin borde para el botón */
+    border-radius: 3px; /* Bordes redondeados para el botón */
+}
+
+/* Estilos personalizados aquí */
+.leaflet-popup-close-button {
+    display: none; /* Oculta el botón predeterminado */
+}
+
+.leaflet-popup-content-wrapper {
+    position: relative; /* Para posicionar el botón de cierre personalizado */
+}
+
+.custom-popup-close {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: transparent; /* Fondo transparente */
+    border: none; /* Sin bordes */
+    font-size: 20px; /* Tamaño del icono */
+    cursor: pointer; /* Cambia el cursor al pasar por encima */
+    z-index: 1000; /* Asegura que el botón esté encima del contenido */
+}
+
+
+/*****************************************************/
+/*         Estilo para el tab del panel infMap       */
+/*****************************************************/
+
+/* Estilo base para las pestañas */
+.nav-tabs .nav-link {
+    background-color: #fff; /* Fondo blanco */
+    color: #343a40 ; /* Texto negro */
+    font-size: 14px; /* Tamaño de la fuente ajustado */
+    padding: 5px 10px; /* Espaciado alrededor del texto */
+    border: 1px solid #ddd; /* Borde alrededor de las pestañas */
+    margin-bottom: -1px; /* Para evitar el borde doble */
+    transition: background-color 0.3s, color 0.3s; /* Transición suave para los colores */
+}
+
+/* Estilo para pestañas activas */
+.nav-tabs .nav-link.active {
+    background-color: #343a40; /* Fondo negro */
+    color: #fff; /* Texto blanco */
+    border-color: #ddd; /* Mantener el borde consistente */
+}
+
+/* Estilo para pestañas al pasar el ratón */
+.nav-tabs .nav-link:hover {
+    background-color: #f0f0f0; /* Fondo gris claro al pasar el ratón */
+    color: #343a40; /* Texto negro */
+}
+
+/* Ajuste para el borde inferior de las pestañas */
+.nav-tabs {
+    border-bottom: 1px solid #ddd;
+}
+
+/* Estilo para el contenido de las pestañas */
+.tab-content {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-top: none;
+    font-size: 14px; /* Tamaño de la fuente ajustado */
+}
+
+
+
+/********************************************/
+/***          Leyendas del Mapa           ***/
+/********************************************/
+.info.legend {
+    background-color: white;
+    padding: 5px;
+    border-radius: 5px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+}
+
+.legend h6 {
+    margin: 0;
+    padding: 0;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.legend-item i {
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+    display: inline-block;
+    border: 1px solid #999;
+}
+
+.collapse-button {
+    background: #343a40;
+    border: none;
+    color: #eceff3;
+    cursor: pointer;
+    text-align: left;
+    padding: 5;
+    height: auto;
+    font-size: 14px;
+    width: 100%; /* Hace que el botón ocupe todo el ancho del contenedor */
+    display: flex; /* Utiliza Flexbox para centrar el contenido */
+    justify-content: center; /* Centra horizontalmente */
+    align-items: center; /* Centra verticalmente */
+}
+
+.legend-section {
+    margin-left: 10px;
+}
+
+
+/*****************************************************/
+/*                Estilo para las Graficos           */
+/*****************************************************/
+
+ /* Estilo para el contenedor de la gráfica de anillo*/
+ #chart {
+    display: flex;
+    align-items: center; /* Centrar verticalmente */
+    justify-content: center; /* Centrar horizontalmente */
+    width: auto;
+    height: auto; /* Altura ajustada */
+    font-size: 14px; /* Tamaño de la fuente ajustado */
+    position: relative; /* Posición relativa para el contenedor */
+}
+
+/* Estilo para los iconos en el centro de la gráfica de anillo */
+.center-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 30px; /* Tamaño de los iconos */
+    display: flex;
+    gap: 10px;
+}
+
+/*****************************************************/
+/*                Estilo de Tarjetas       */
+/*****************************************************/
+
+
+ /* Estilo personalizado para hacer que la tarjeta sea más angosta */
+ .card {
+    max-width: auto; /* Ajusta el tamaño máximo de la tarjeta */
+    margin: auto; /* Centra la tarjeta en su contenedor */
+    padding: .2rem;
+}
+
+.card-header {
+    display: flex;
+    align-items: center; /* Centrar verticalmente */
+    height: 50px; /* Puedes ajustar la altura */
+    padding: 0 15px; /* Ajustar el padding */
+}
+
+.card-title {
+    margin: 0; /* Eliminar margen para alinear bien el texto */
+    flex: 1; /* Permitir que el texto ocupe el espacio disponible */
+    text-align: center; /* Centrar horizontalmente */
+}
+
+.card-body {
+    padding: .5rem;
+    background: #ddd;
+}
+
+
+/* Estilos personalizados para el selector */
+#infoSelector {
+    font-size: 0.7rem; /* Tamaño de fuente más pequeño */
+    padding: 5px 10px; /* Ajustar el padding */
+    width: auto; /* Ajustar ancho automáticamente */
+    display: inline-block; /* Para que no ocupe todo el ancho del contenedor */
+}
+
+/*********************************************************************/
+/*** textos de municipios */
+
+
+    .custom-div-icon {
+        font-size: 10px; /* Tamaño de fuente ajustado */
+        text-align: center; /* Centrar el texto */
+        white-space: pre-wrap; /* Permitir salto de línea */
+        font-weight: bold; /* Poner el texto en negritas */
+    }
+
+   
+/********************************************/
+/***                Tablas                ***/
+/********************************************/
+
+.table td, .table th {
+    padding: .5em;
+}
+
+.flex-table {
+    width: 100%;
+}
+
+.flex-container {
+    display: flex;
+    align-items: center; /* Alineación vertical */
+    justify-content: center; /* Alineación horizontal, si es necesario */
+    height: 20px; /* Ajusta la altura según sea necesario */
+    text-align: center; /* Alineación horizontal del texto */
+}
+
+
+.text-content {
+    margin-right: 18px; /* Espacio entre el texto y el botón */
+    font-weight: bold; /* Peso del texto */
+}
+
+.icon-button {
+    background: none; /* Fondo transparente */
+    border: none; /* Sin borde */
+    cursor: pointer; /* Cursor de puntero al pasar sobre el botón */
+    padding: 0; /* Eliminar padding interno */
+}
+
+
+/* Contenedor flexible en una columna y centrado */
+.flex-column-container {
+    display: flex;           /* Utiliza flexbox para el layout */
+    flex-direction: column;  /* Coloca los elementos en una columna */
+    align-items: center;     /* Centra los elementos horizontalmente */
+    justify-content: center; /* Centra los elementos verticalmente */
+}
+
+/* Estilo para el título de los datos */
+.data-title {
+    font-size: 12px;         /* Tamaño de fuente para el título */
+    font-weight: bold;       /* Aplica negritas al texto */
+    color: #111111;          /* Color del texto del título */
+    text-align: center;      /* Alinea el texto al centro */
+}
+
+/* Estilo para el número de datos */
+.data-number {
+    font-size: 16px;         /* Tamaño de fuente más grande para destacar el número */
+    font-weight: bold;       /* Aplica negritas al número */
+    color: #ff4500;          /* Color resaltado para el número, ajustable */
+}
+
+/* Estilo para el contexto de los datos */
+.data-context {
+    font-weight: normal;     /* Peso normal para el texto del contexto */
+    font-size: 10px;         /* Tamaño de fuente más pequeño para el contexto */
+    color: #555555;          /* Color gris para el texto del contexto */
+    text-align: center;      /* Alinea el texto al centro */
 }
